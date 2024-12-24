@@ -95,9 +95,19 @@ mark_done_task() {
 }
 
 show_task() {
-  echo -e "\033[1;34m----------TASK LIST----------\033[0m"
-  grep '^ID:' "$0" | sed -E 's/\[DONE\] TASK:/\x1b[9m&/' | sed -E 's/(PRIORITY:.*)$/\1\x1b[0m/'
-  echo -e "\033[1;34m-----------------------------\033[0m"
+  echo -e "\033[1;34m----------ACTIVE TASKS----------\033[0m"
+  grep '^ID:' "$0" | grep -v '\[DONE\]' | sed -E 's/(PRIORITY:.*)$/\1\x1b[0m/'
+  if ! grep '^ID:' "$0" | grep -v '\[DONE\]' &>/dev/null; then
+    echo -e "\033[1;31mNo active tasks found.\033[0m"
+  fi
+  echo -e "\033[1;34m--------------------------------\033[0m"
+
+  echo -e "\033[1;32m----------COMPLETED TASKS----------\033[0m"
+  grep '^ID:' "$0" | grep '\[DONE\]' | sed -E 's/(PRIORITY:.*)$/\1\x1b[0m/'
+  if ! grep '^ID:' "$0" | grep '\[DONE\]' &>/dev/null; then
+    echo -e "\033[1;31mNo completed tasks found.\033[0m"
+  fi
+  echo -e "\033[1;32m-----------------------------------\033[0m"
 }
 
 show_help() {
@@ -117,8 +127,8 @@ EOF
 }
 
 fzf_menu() {
-  $0 show
-  COMMAND=$(printf "add\nshow\ndel\nmark_done" | fzf --no-border --no-preview --height=10 --prompt="Select command: ")
+  # $0 show
+  COMMAND=$(printf "add\nshow\ndel\nmark_done" | fzf --no-border --no-preview --height=6 --prompt="Select command: ")
   case $COMMAND in
     add)
       $0 add
@@ -157,5 +167,6 @@ fi
 exit
 
 TASKLISTSTART
-ID:1 TASK:test TAGS:none DEADLINE:2024-12-24 PRIORITY:medium
+ID:1 [DONE] TASK:test TAGS:none DEADLINE:2024-12-24 PRIORITY:medium
+ID:2 TASK:Test TAGS:none DEADLINE:2024-12-24 PRIORITY:medium
 TASKLISTEND
